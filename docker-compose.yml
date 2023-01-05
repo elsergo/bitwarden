@@ -1,0 +1,35 @@
+version: '3.7'
+services:
+  vaultwarden:
+    image: vaultwarden/server:latest
+    container_name: vaultwarden
+    restart: always
+    environment:
+     - WEBSOCKET_ENABLED=true
+    volumes:
+     - /vw-data/:/data/
+    networks:
+      vault-net:
+        ipv4_address: 172.20.1.1
+
+  haproxy:
+    image: haproxytech/haproxy-alpine:latest
+    container_name: haproxy
+    restart: always
+    ports:
+     - 80:80  # for redirect to https
+     - 443:443
+    volumes:
+     - /haproxy-config/:/usr/local/etc/haproxy/
+     - /ssl/keys:/etc/ssl/certs/
+    networks:
+      vault-net:
+        ipv4_address: 172.20.1.2
+
+networks:
+  vault-net:
+    driver: bridge
+    ipam:
+      driver: default
+      config:
+        - subnet: 172.20.0.0/16
